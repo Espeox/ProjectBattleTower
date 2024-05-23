@@ -1,14 +1,26 @@
 import numpy as np
-
+import random
 from poke_env.player import Player
 
 
 class MaxDamagePlayer(Player):
-    def choose_move(self, battle):
+    def choose_move(self, battle, epsilon = 0.3):
         # If the player can attack, it will
-        if battle.available_moves:
+        if battle.available_moves and random.random() <= epsilon:
             # Finds the best move among available ones
-            best_move = max(battle.available_moves, key=lambda move: move.base_power)
+            best_move = None
+            highest_move_dmg = -1
+            mon_a = battle.active_pokemon
+            mon_b = battle.opponent_active_pokemon
+
+            for move in battle.available_moves:
+                print(f'Checking Move Type {move.type}, and Base Power {move.base_power}')
+                move_dmg = move.base_power * move.type.damage_multiplier(mon_b.type_1, mon_b.type_2, type_chart=battle._data.type_chart)
+                
+                if move_dmg > highest_move_dmg:
+                    best_move = move
+                    highest_move_dmg = move_dmg
+            
             return self.create_order(best_move)
 
         # If no attack is available, a random switch will be made
